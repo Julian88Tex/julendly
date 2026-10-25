@@ -4,7 +4,7 @@
 // safe.
 //
 //   ?tab=past                         Upcoming (default) | Past | Date Range (tab=range&start=2026-10-01&end=2026-10-31)
-//   ?status=canceled                  Status: active (default), canceled, or both ("active,canceled")
+//   ?status=active                    Status: both (default, so canceled meetings stay easy to find), active or canceled
 //   ?eventTypes=id1,id2               Event Types
 //   ?emails=a@example.com,b@...       Invitee Emails
 //   ?q=maya                           search (invitee name or email, event name)
@@ -45,7 +45,10 @@ export const MAX_FILTER_EVENT_TYPES = 50;
 const MAX_CURSOR = 512;
 const MAX_PAGE = 100_000;
 
-export const DEFAULT_STATUS: readonly MeetingStatus[] = ["active"];
+export const DEFAULT_STATUS: readonly MeetingStatus[] = ["active", "canceled"];
+
+/** "Hide canceled" (the checkbox beside Filter): active meetings only. */
+export const HIDE_CANCELED_STATUS: readonly MeetingStatus[] = ["active"];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ISO_DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;

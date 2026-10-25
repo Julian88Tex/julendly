@@ -115,12 +115,13 @@ describe("filters and search (MT-08)", () => {
     expect(data.eventTypes.map((e) => e.name)).toEqual(["30 Minute Virtual", "60 Minute Virtual"]);
   });
 
-  it("shows only active events by default and both when asked", async () => {
+  it("shows active and canceled events by default and only active ones with Hide canceled", async () => {
     const et = await eventType();
     await f.createBooking(t.db, { eventType: et, start: at(5 * H), status: "canceled" });
     await f.createBooking(t.db, { eventType: et, start: at(6 * H) });
-    expect((await page(owner)).total).toBe(1);
+    expect((await page(owner)).total).toBe(2);
     expect((await page(owner, "status=active,canceled")).total).toBe(2);
+    expect((await page(owner, "status=active")).total).toBe(1);
   });
 
   it("filters by invitee emails and searches invitee names, emails and event names", async () => {
