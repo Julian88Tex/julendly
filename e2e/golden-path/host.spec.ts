@@ -38,7 +38,8 @@ test.describe("golden path: host", () => {
     await dialog.getByRole("textbox", { name: "Add a cancellation message" }).fill("Out sick today");
     await dialog.getByRole("button", { name: "Yes, cancel" }).click();
     await expect(page.getByText("Event canceled")).toBeVisible(SLOW);
-    await expect(page.getByTestId(`meeting-row-${second}`)).toHaveCount(0, SLOW);
+    // Canceled meetings stay in the list by default, marked Canceled.
+    await expect(page.getByTestId(`meeting-row-${second}`)).toContainText("Canceled", SLOW);
     const canceled = await emailTo(api, "daniel.okafor@example.com", "lifecycle.invitee_canceled");
     expect(canceled.text).toContain("Out sick today");
     expect(canceled.icsMethod).toBe("CANCEL");

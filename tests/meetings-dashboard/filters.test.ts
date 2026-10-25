@@ -14,7 +14,7 @@ const parse = (qs: string): MeetingsQuery => parseMeetingsQuery(new URLSearchPar
 describe("parseMeetingsQuery", () => {
   it("defaults to Upcoming, active events, no filters, page 1", () => {
     const q = parse("");
-    expect(q).toMatchObject({ tab: "upcoming", tabExplicit: false, status: ["active"], statusExplicit: false, eventTypeIds: [], emails: [], q: "", page: 1, after: null, before: null, event: null });
+    expect(q).toMatchObject({ tab: "upcoming", tabExplicit: false, status: ["active", "canceled"], statusExplicit: false, eventTypeIds: [], emails: [], q: "", page: 1, after: null, before: null, event: null });
   });
 
   it("reads every parameter and drops invalid ones", () => {
@@ -30,7 +30,7 @@ describe("parseMeetingsQuery", () => {
 
   it("falls back on unknown tabs and statuses", () => {
     expect(parse("tab=pending").tab).toBe("upcoming");
-    expect(parse("status=deleted").status).toEqual(["active"]);
+    expect(parse("status=deleted").status).toEqual(["active", "canceled"]);
     expect(parse("event=not-a-uuid").event).toBeNull();
   });
 
@@ -95,6 +95,11 @@ describe("filter helpers", () => {
     expect(hasActiveFilters(parse(""))).toBe(false);
     expect(activeFilterCount(parse(`status=canceled&eventTypes=${ET1}&emails=a@example.com&q=x`))).toBe(4);
     expect(hasActiveFilters(parse("tab=past"))).toBe(false);
+    // Canceled meetings show by default; "Hide canceled" (status=active) is a filter and stays in the URL.
+    expect(hasActiveFilters(parse("status=active,canceled"))).toBe(false);
+    expect(activeFilterCount(parse("status=active"))).toBe(1);
+    expect(meetingsHref(parse("status=active"))).toBe("/app/meetings?status=active");
+    expect(meetingsHref(parse("status=canceled,active"))).toBe("/app/meetings");
   });
 
   it("splits invitee email lists", () => {

@@ -85,13 +85,14 @@ function EventTypesFilter({ query, eventTypes, onChange }: FilterBarProps) {
 function StatusFilter({ query, onChange }: Pick<FilterBarProps, "query" | "onChange">) {
   const has = (s: MeetingStatus) => query.status.includes(s);
   const both = has("active") && has("canceled");
-  const value = both ? `${C.statusActive}, ${C.statusCanceled}` : has("canceled") ? C.statusCanceled : null;
+  // Both is the default (no summary); one status alone is a filter.
+  const value = both ? null : has("canceled") ? C.statusCanceled : C.statusActive;
   const set = (s: MeetingStatus, on: boolean) => {
     const next = (["active", "canceled"] as const).filter((x) => (x === s ? on : has(x)));
     if (next.length) onChange({ status: [...next] });
   };
   return (
-    <Popover align="start" aria-label={C.status} className="w-64" trigger={<FilterButton label={C.status} summary={value} active={!has("active") || both} />}>
+    <Popover align="start" aria-label={C.status} className="w-64" trigger={<FilterButton label={C.status} summary={value} active={!both} />}>
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-label text-ink">{C.status}</legend>
         {/* At least one status stays selected. */}

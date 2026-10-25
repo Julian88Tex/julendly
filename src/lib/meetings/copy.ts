@@ -21,6 +21,7 @@ export const MEETINGS_COPY = {
   status: "Status",
   statusActive: "Active events",
   statusCanceled: "Canceled events",
+  hideCanceled: "Hide canceled",
   inviteeEmails: "Invitee Emails",
   inviteeEmailsHint: "Separate email addresses with commas.",
   inviteeEmailsPlaceholder: "name@example.com, other@example.com",

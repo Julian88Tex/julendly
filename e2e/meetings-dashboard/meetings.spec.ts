@@ -126,7 +126,7 @@ test.describe("meetings page", () => {
     expect(errors).toEqual([]);
   });
 
-  test("cancels a meeting with a message (CR-06) and finds it under Canceled events", async ({ page, api }) => {
+  test("cancels a meeting with a message (CR-06), keeps it in the list and hides it with Hide canceled", async ({ page, api }) => {
     const [, second] = seeded.demoData.scheduledEventIds;
     await open(page, `/app/meetings?event=${second}`);
     const r = row(page, second!);
@@ -136,26 +136,26 @@ test.describe("meetings page", () => {
     await dialog.getByRole("textbox", { name: "Add a cancellation message" }).fill("Something urgent came up");
     await dialog.getByRole("button", { name: "Yes, cancel" }).click();
     await expect(page.getByText("Event canceled")).toBeVisible(SLOW);
-    await expect(row(page, second!)).toHaveCount(0, SLOW);
-    await expect(page.getByTestId("meetings-counter")).toHaveText("Displaying 1 - 2 of 2 Events");
-    // The focus is not lost with the removed row, and the deep link's own "Canceled events" did not open the filters.
-    await expect(page.getByTestId("meetings-list")).toBeFocused();
-    await expect(page.getByTestId("meetings-filters")).toHaveCount(0);
-
-    // Status filter: Canceled events.
-    await page.getByTestId("meetings-filter-toggle").click();
-    await page.getByRole("button", { name: /^Status/ }).click();
-    await page.getByRole("checkbox", { name: "Canceled events" }).click();
-    await expect(page).toHaveURL(/status=active%2Ccanceled|status=active,canceled/, SLOW);
-    await page.keyboard.press("Escape");
+    // Canceled meetings show by default: the row stays, marked Canceled, and the filters stay closed.
     const canceled = row(page, second!);
     await expect(canceled).toContainText("Canceled", SLOW);
-    await canceled.getByTestId("meeting-details-toggle").click();
-    await expect(canceled.getByTestId("notice-canceled")).toContainText("Canceled by Julian Joseph (host)");
-    await expect(canceled.getByTestId("notice-canceled")).toContainText("Reason: Something urgent came up");
+    await expect(page.getByTestId("meetings-counter")).toHaveText("Displaying 1 - 3 of 3 Events");
+    await expect(page.getByTestId("meetings-filters")).toHaveCount(0);
+    const notice = canceled.getByTestId("notice-canceled");
+    if (!(await notice.isVisible())) await canceled.getByTestId("meeting-details-toggle").click();
+    await expect(notice).toContainText("Canceled by Julian Joseph (host)");
+    await expect(notice).toContainText("Reason: Something urgent came up");
     await expect(canceled.getByRole("link", { name: /Schedule Invitee Again/ })).toHaveAttribute("href", /\/julianjoseph\/60min\?name=Daniel\+Okafor&email=daniel\.okafor%40example\.com/);
     const email = await api.waitForEmail((e) => e.template === "lifecycle.invitee_canceled" && e.to.includes("daniel.okafor@example.com"), { to: "daniel.okafor@example.com", timeoutMs: 30_000 });
     expect(email.text).toContain("Something urgent came up");
+
+    // Hide canceled takes it out of the list; unchecking brings it back.
+    await page.getByRole("checkbox", { name: "Hide canceled" }).click();
+    await expect(page).toHaveURL(/status=active(?![%,])/, SLOW);
+    await expect(row(page, second!)).toHaveCount(0, SLOW);
+    await expect(page.getByTestId("meetings-counter")).toHaveText("Displaying 1 - 2 of 2 Events");
+    await page.getByRole("checkbox", { name: "Hide canceled" }).click();
+    await expect(row(page, second!)).toContainText("Canceled", SLOW);
   });
 
   test("reschedules from the details and opens the new meeting (CR-07)", async ({ page }) => {
@@ -172,7 +172,8 @@ test.describe("meetings page", () => {
     await picker.getByRole("button", { name: "Reschedule", exact: true }).click();
     await expect(page.getByText("Meeting rescheduled")).toBeVisible(SLOW);
     await expect(page).toHaveURL(/event=/, SLOW);
-    await expect(row(page, first!)).toHaveCount(0, SLOW);
+    // The former meeting stays in the list (canceled meetings show by default), badged Rescheduled.
+    await expect(row(page, first!)).toContainText("Rescheduled", SLOW);
     const fresh = page.getByTestId("meeting-details");
     await expect(fresh.getByTestId("notice-rescheduled_from")).toContainText("Rescheduled from 11:00am - 11:30am, Wednesday, October 9, 2030", SLOW);
     await expect(page.getByTestId("meeting-details-panel")).toBeFocused();

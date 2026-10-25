@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type * as React from "react";
 import { Banner } from "@/components/ui/banner";
 import { Button, buttonClassName } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CopyButton } from "@/components/ui/copy-button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,7 +23,7 @@ import { Illustration } from "@/components/ui/illustration";
 import { MEDIA, useMediaQuery } from "@/lib/client/use-media-query";
 import { cn } from "@/lib/cn";
 import { fill, MEETINGS_COPY as C } from "@/lib/meetings/copy";
-import { activeFilterCount, clearedFilters, DEFAULT_STATUS, exportHref, hasActiveFilters, meetingsHref, RANGE_MAX, RANGE_MIN, type MeetingsTab, type QueryPatch } from "@/lib/meetings/filters";
+import { activeFilterCount, clearedFilters, DEFAULT_STATUS, exportHref, HIDE_CANCELED_STATUS, hasActiveFilters, meetingsHref, RANGE_MAX, RANGE_MIN, type MeetingsTab, type QueryPatch } from "@/lib/meetings/filters";
 import { rangePresets } from "@/lib/meetings/ranges";
 import type { MeetingsPageData, MeetingView } from "@/lib/meetings/types";
 import { ExportButton } from "./export-button";
@@ -209,7 +210,7 @@ export function MeetingsView({ data }: { data: MeetingsPageData }) {
               );
             })}
           </nav>
-          <div className="flex items-center gap-2 pb-3 sm:pt-3">
+          <div className="flex flex-wrap items-center gap-2 pb-3 sm:pt-3">
             <ExportButton href={exportHref(query)} />
             <Button
               variant="secondary"
@@ -228,6 +229,13 @@ export function MeetingsView({ data }: { data: MeetingsPageData }) {
                 </span>
               )}
             </Button>
+            {/* Canceled meetings show by default so a lost booking is easy to trace; this hides them. */}
+            <Checkbox
+              checked={!query.status.includes("canceled")}
+              onCheckedChange={(v) => change({ status: [...(v ? HIDE_CANCELED_STATUS : DEFAULT_STATUS)] })}
+              label={C.hideCanceled}
+              className="ml-1 items-center"
+            />
           </div>
         </div>
         {query.tab === "range" && query.start && query.end && (

@@ -130,9 +130,9 @@ describe("exportCsvLines", () => {
       status: "canceled",
       invitee: { name: "Canceled", overrides: { cancelerType: "invitee", cancelReason: "Sick" } },
     });
-    expect(col(await csv(owner), "Invitee Name")).toEqual(["Upcoming"]);
+    expect(col(await csv(owner, "status=active"), "Invitee Name")).toEqual(["Upcoming"]);
     expect(col(await csv(owner, "tab=past"), "Invitee Name")).toEqual(["Past"]);
-    const both = await csv(owner, "status=active,canceled");
+    const both = await csv(owner);
     expect(col(both, "Invitee Name")).toEqual(["Upcoming", "Canceled"]);
     expect(col(both, "Canceled")).toEqual(["false", "true"]);
     expect(col(both, "Canceled By")).toEqual(["", "Canceled"]);
