@@ -31,6 +31,9 @@ Your site is live at https://julendly.vercel.app (Vercel, free plan, Neon Postgr
 - Checked live end to end: a booking created the calendar event with a Meet link and sent the emails, and cancelling it
   from the invitee link deleted the event and sent both cancellation emails.
 
+- JSuite single sign in: with `JSUITE_URL` set, the login page shows "Continue with JSuite", which signs you in through
+  https://jsuite-eight.vercel.app with the same account as "Continue with Google" (October 25).
+
 How releases work: `main` is what is live, and every change merges into it through a pull request. A commit on `main`
 whose message contains `[deploy]` builds and goes live; merges without it do not build, so nothing reaches your site
 until a release is made (since October 16; before that, releases went to a separate `production` branch, now frozen).
