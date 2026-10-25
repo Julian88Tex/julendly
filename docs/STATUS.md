@@ -31,8 +31,8 @@ Your site is live at https://julendly.vercel.app (Vercel, free plan, Neon Postgr
 - Checked live end to end: a booking created the calendar event with a Meet link and sent the emails, and cancelling it
   from the invitee link deleted the event and sent both cancellation emails.
 
-- Juniverse single sign in: with `JUNIVERSE_URL` set, the login page shows "Continue with Juniverse", which signs you in through
-  https://juniverse.vercel.app with the same account as "Continue with Google" (October 25).
+- JSlice single sign in: with `JSLICE_URL` set, the login page shows "Continue with JSlice", which signs you in through
+  https://jslice.vercel.app with the same account as "Continue with Google" (October 25).
 
 How releases work: `main` is what is live, and every change merges into it through a pull request. A commit on `main`
 whose message contains `[deploy]` builds and goes live; merges without it do not build, so nothing reaches your site

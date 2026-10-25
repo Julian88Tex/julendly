@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonClassName } from "@/components/ui/button";
 import { redirectIfSignedIn } from "@/lib/auth/guards";
-import { JUNIVERSE_APP_ID, juniverseUrl } from "@/lib/auth/juniverse";
+import { JSLICE_APP_ID, jsliceUrl } from "@/lib/auth/jslice";
 import { oauthErrorFromSearchParams, oauthErrorMessage } from "@/lib/auth/oauth/errors";
 import { getSignupAvailability } from "@/lib/auth/policy";
 import { getFeatures } from "@/lib/env";
@@ -28,7 +28,7 @@ export default async function LogInToYourAccountPage({ searchParams }: Props) {
   const features = getFeatures();
   const availability = await getSignupAvailability();
   const oauthError = oauthErrorFromSearchParams(sp);
-  const juniverse = juniverseUrl();
+  const jslice = jsliceUrl();
   return (
     <AuthShell
       title="Log in to your account"
@@ -43,12 +43,12 @@ export default async function LogInToYourAccountPage({ searchParams }: Props) {
         ) : null
       }
     >
-      {juniverse && (
+      {jslice && (
         <a
-          href={`${juniverse}/?app=${JUNIVERSE_APP_ID}&next=${encodeURIComponent(next ?? "/app/scheduling")}`}
+          href={`${jslice}/?app=${JSLICE_APP_ID}&next=${encodeURIComponent(next ?? "/app/scheduling")}`}
           className={buttonClassName({ variant: "secondary", fullWidth: true, className: "mb-3" })}
         >
-          Continue with Juniverse
+          Continue with JSlice
         </a>
       )}
       <LoginForm
