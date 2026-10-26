@@ -109,6 +109,8 @@ export async function syncBookedEvents(opts: { calendarId?: string; limit?: numb
         inArray(calendarConnections.status, ["active", "error"]),
         eq(scheduledEvents.status, "active"),
         gt(scheduledEvents.endAt, lookback),
+        // Ended meetings only follow moves of their meeting event (pastMeetingChange): their buffer events are not read.
+        or(gt(scheduledEvents.endAt, t), eq(calendarLinkedEvents.purpose, "meeting")),
         lt(scheduledEvents.startAt, horizon),
         opts.calendarId ? eq(calendarLinkedEvents.calendarId, opts.calendarId) : or(isNull(calendarLinkedEvents.lastCheckedAt), lt(calendarLinkedEvents.lastCheckedAt, checkedBefore)),
       ),
