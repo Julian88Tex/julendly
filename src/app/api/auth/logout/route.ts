@@ -25,5 +25,5 @@ export async function POST(request: Request): Promise<Response> {
       log.warn("auth.logout_audit_failed", { error: e }),
     );
   }
-  return new Response(null, { status: 303, headers: { Location: absoluteUrl("/login"), "Cache-Control": "no-store" } });
+  return new Response(null, { status: 303, headers: { Location: absoluteUrl("/login?jslice=none"), "Cache-Control": "no-store" } });
 }
