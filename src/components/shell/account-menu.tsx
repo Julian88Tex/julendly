@@ -9,7 +9,7 @@
 // navigable, Escape closes.
 "use client";
 
-import { CalendarSync, ChevronDown, HelpCircle, KeyRound, Link as LinkIcon, LogOut, Monitor, Moon, Palette, Share2, Sun, User } from "lucide-react";
+import { CalendarSync, ChevronDown, HelpCircle, KeyRound, Link as LinkIcon, LogOut, Monitor, MoonStar, Palette, Share2, SunMedium, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { copyText } from "@/lib/client/use-copy";
 import { Avatar } from "../ui/avatar";
@@ -46,8 +46,8 @@ export type AccountMenuProps = {
 };
 
 const THEME_OPTIONS = [
-  { value: "light", label: "Light", icon: <Sun aria-hidden="true" /> },
-  { value: "dark", label: "Dark", icon: <Moon aria-hidden="true" /> },
+  { value: "light", label: "Light", icon: <SunMedium aria-hidden="true" /> },
+  { value: "dark", label: "Dark", icon: <MoonStar aria-hidden="true" /> },
   { value: "system", label: "System", icon: <Monitor aria-hidden="true" /> },
 ] as const;
 
