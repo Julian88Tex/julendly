@@ -1,8 +1,8 @@
 // Host-side calendar changes on PGlite (SPEC CAL-14, CAL-13, CR-17; ARCHITECTURE 10.3): the sync job detects moved,
 // deleted and declined provider events of upcoming meetings and calls lifecycle-core's applyExternalCalendarChange with
-// the right change type; buffer events report their own moves; calendars without sync, canceled and past meetings are
-// skipped; checks are spaced 10 minutes apart; failures leave the change for the next run. Google push notifications:
-// channel verification, cache invalidation and an immediate sync job; channels are created, kept and stopped.
+// the right change type; buffer events report their own moves; calendars without sync, canceled and long past meetings
+// are skipped, and a recently ended meeting only follows a move to a time still ahead; checks are spaced 10 minutes
+// apart; failures leave the change for the next run. Google push notifications: channel verification, cache invalidation and an immediate sync job; channels are created, kept and stopped.
 import { and, eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -122,14 +122,35 @@ describe("syncBookedEvents (CAL-14)", () => {
     expect(h.changes).toEqual([{ linkedEventId: bufferRow!.id, change: { type: "moved", start: buffer.start, end: buffer.end } }]);
   });
 
-  it("skips calendars without sync, canceled meetings and past meetings", async () => {
+  it("skips calendars without sync, canceled meetings and meetings that ended over two weeks ago", async () => {
     const off = await booked({ syncChanges: false });
     const canceled = await booked();
     await t.db.update(scheduledEvents).set({ status: "canceled" }).where(eq(scheduledEvents.id, canceled.se.id));
-    const past = await booked({ startInHours: -3 });
-    for (const m of [off, canceled, past]) google().events.set(`${m.g.connectionId}:me@example.com`, []);
+    const old = await booked({ startInHours: -15 * 24 });
+    for (const m of [off, canceled, old]) google().events.set(`${m.g.connectionId}:me@example.com`, []);
     const r = await syncBookedEvents();
     expect(r.checked).toBe(0);
+    expect(h.changes).toEqual([]);
+  });
+
+  it("follows a meeting the host moved to a later day after its old time passed", async () => {
+    const m = await booked({ startInHours: -5 * 24 });
+    const ev = m.providerEvent();
+    ev.start = new Date(Date.now() + 12 * HOUR);
+    ev.end = new Date(ev.start.getTime() + 30 * MIN);
+    const r = await syncBookedEvents();
+    expect(r.changes).toBe(1);
+    expect(h.changes).toEqual([{ linkedEventId: m.linkedEventId, change: { type: "moved", start: ev.start, end: ev.end } }]);
+  });
+
+  it("never cancels or reschedules a meeting that already happened when its old event is deleted or edited", async () => {
+    const deleted = await booked({ startInHours: -3 });
+    google().events.set(`${deleted.g.connectionId}:me@example.com`, []);
+    const shortened = await booked({ startInHours: -3, buffers: true });
+    shortened.providerEvent().end = new Date(shortened.providerEvent().end.getTime() - 10 * MIN);
+    shortened.providerEvent("buffer_after").end = new Date(Date.now() + HOUR);
+    const r = await syncBookedEvents();
+    expect(r.checked).toBeGreaterThan(0);
     expect(h.changes).toEqual([]);
   });
 

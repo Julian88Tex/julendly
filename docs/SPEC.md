@@ -1601,7 +1601,10 @@ normative.
   from connected calendar event"; if the time moved, the meeting is rescheduled: the old meeting is canceled with
   reason "Rescheduled from connected calendar event" (`canceler_type = host`) and a new meeting is created at the new
   time reusing the same provider event (observed), invitees notified with the reschedule email. Invitee-side changes
-  (their own calendar) never affect meetings. Moved buffer events update buffers (CAL-13).
+  (their own calendar) never affect meetings. Moved buffer events update buffers (CAL-13). Meetings that ended in the
+  last 14 days are still checked (owner request: moving a meeting after its old time passed must follow), but only a
+  move of the meeting event to a time that has not ended yet applies; deleting or editing an old event never cancels or
+  reschedules a meeting that already happened.
 - **Acceptance**: with a mocked provider event moved by one hour, the next sync produces a canceled old meeting and an
   active new meeting with `rescheduled` links between their invitees.
 
