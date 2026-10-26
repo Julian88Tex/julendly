@@ -56,6 +56,9 @@ export function AccountMenu({ user, publicUrl, compact, operatorEmail, theme = "
   // Shows the choice at once; follows the saved preference again when it changes (after the save revalidates).
   const [appearance, setAppearance] = useState<ThemePreference>(theme);
   const [savedTheme, setSavedTheme] = useState(theme);
+  // The last preference the server confirmed, and the latest save (an older save's failure must not undo a newer choice).
+  const confirmed = useRef<ThemePreference>(theme);
+  const latestSave = useRef(0);
   if (savedTheme !== theme) {
     setSavedTheme(theme);
     setAppearance(theme);
@@ -126,13 +129,15 @@ export function AccountMenu({ user, publicUrl, compact, operatorEmail, theme = "
                 options={THEME_OPTIONS}
                 onValueChange={async (value) => {
                   const next = value as ThemePreference;
-                  const previous = appearance;
+                  const save = ++latestSave.current;
                   setAppearance(next);
                   applyTheme(next);
                   const saved = await onThemeChange(next).then((r) => r.ok, () => false);
+                  if (saved) confirmed.current = next;
+                  if (save !== latestSave.current) return;
                   if (!saved) {
-                    setAppearance(previous);
-                    applyTheme(previous);
+                    setAppearance(confirmed.current);
+                    applyTheme(confirmed.current);
                     toast.error("Couldn't save your appearance setting.");
                   }
                 }}

@@ -152,7 +152,7 @@ export function DropdownMenuSegmented({ label, value, options, onValueChange }: 
           onSelect={(e) => e.preventDefault()}
           className={cn(
             "flex min-h-11 cursor-pointer select-none flex-col items-center justify-center gap-0.5 rounded-[6px] px-2 py-1 text-[12px] leading-4 font-semibold text-ink-2 outline-none",
-            "data-[highlighted]:text-ink data-[highlighted]:data-[state=unchecked]:bg-mist data-[state=checked]:bg-[var(--white)] data-[state=checked]:text-ink data-[state=checked]:shadow-[var(--shadow-next)]",
+            "data-[highlighted]:text-ink data-[highlighted]:data-[state=unchecked]:bg-mist data-[state=checked]:bg-[var(--white)] data-[state=checked]:text-ink data-[state=checked]:shadow-[var(--shadow-next)] focus-visible:ring-2 focus-visible:ring-[var(--focus)]",
             "[&_svg]:size-4 [&_svg]:shrink-0",
           )}
         >
