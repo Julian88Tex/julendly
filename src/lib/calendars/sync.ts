@@ -2,7 +2,8 @@
 //
 // Host-side changes of booked meetings (SPEC CAL-14, CAL-13, CR-17; ARCHITECTURE 10.3; observed in the owner's
 // account: moving the Google event reschedules the booking, deleting it cancels it).
-// syncBookedEvents checks the provider events this app created for active upcoming meetings (next 90 days) on
+// syncBookedEvents checks the provider events this app created for active meetings (next 90 days, plus those that
+// ended in the last SYNC_LOOKBACK_DAYS so a meeting the host moved after its old time passed still follows) on
 // calendars with "Automatically sync cancellations and reschedules" on, each at most every 10 minutes (a push
 // notification forces an immediate check of its calendar): deleted (or cancelled) -> { type: "deleted" }, declined
 // by the host -> { type: "declined" }, start or end different from what we last wrote -> { type: "moved", start,
@@ -11,6 +12,8 @@
 // a transient provider failure stops that connection's batch until the next run. A permanent failure of one event (a
 // calendar that was unshared or deleted answers "calendarUnavailable", never a delete) skips that row only and asks
 // for a calendar list refresh, so one bad row never blocks the others and no meeting is canceled by mistake.
+// A meeting that already ended only follows a move to a time that has not ended yet (pastMeetingChange): deleting or
+// shortening an old event to tidy the calendar never cancels or reschedules a meeting that already happened.
 // Free/busy only calendars (access.ts) are never checked: their events cannot be read, so a missing event there says
 // nothing about the meeting (only reachable when a destination calendar's access later dropped to free/busy).
 import "server-only";
@@ -31,6 +34,8 @@ import { isProviderAuthError, isProviderRequestError, isProviderTransientError, 
 /** CAL-14: each linked event is checked at most this often (push notifications bypass it). */
 export const SYNC_CHECK_INTERVAL_MS = 10 * 60 * 1000;
 export const SYNC_HORIZON_DAYS = 90;
+/** Meetings that ended this recently are still checked for moves (see pastMeetingChange). */
+export const SYNC_LOOKBACK_DAYS = 14;
 const BATCH = 100;
 const CALENDAR_LIST_REFRESH_JOB = "calendars.refresh_calendar_list";
 
@@ -43,6 +48,7 @@ type SyncRow = {
   calendarExternalId: string;
   connectionId: string;
   provider: (typeof calendarConnections.$inferSelect)["provider"];
+  meetingEndAt: Date;
 };
 
 /** The change a provider event shows compared with what we wrote, or null. */
@@ -59,11 +65,20 @@ export function detectChange(row: Pick<SyncRow, "syncedStartAt" | "syncedEndAt">
   return null;
 }
 
+/** The change to apply for a meeting that already ended at `t`: only a move of the meeting event to a time still ahead
+ * (see the file header). */
+export function pastMeetingChange(change: ExternalCalendarChange | null, row: Pick<SyncRow, "purpose" | "meetingEndAt">, t: Date): ExternalCalendarChange | null {
+  if (!change || row.meetingEndAt > t) return change;
+  if (row.purpose !== "meeting" || change.type !== "moved" || !(change.end > t)) return null;
+  return change;
+}
+
 /** CAL-14 sync run (see the file header). `calendarId` limits it to one calendar and ignores the 10 minute spacing. */
 export async function syncBookedEvents(opts: { calendarId?: string; limit?: number } = {}): Promise<{ checked: number; changes: number }> {
   const db = await getDb();
   const t = now();
   const horizon = new Date(t.getTime() + SYNC_HORIZON_DAYS * 86_400_000);
+  const lookback = new Date(t.getTime() - SYNC_LOOKBACK_DAYS * 86_400_000);
   const checkedBefore = new Date(t.getTime() - SYNC_CHECK_INTERVAL_MS);
   const rows: SyncRow[] = await db
     .select({
@@ -75,6 +90,7 @@ export async function syncBookedEvents(opts: { calendarId?: string; limit?: numb
       calendarExternalId: calendars.externalId,
       connectionId: calendars.connectionId,
       provider: calendarConnections.provider,
+      meetingEndAt: scheduledEvents.endAt,
     })
     .from(calendarLinkedEvents)
     .innerJoin(calendars, eq(calendars.id, calendarLinkedEvents.calendarId))
@@ -92,7 +108,7 @@ export async function syncBookedEvents(opts: { calendarId?: string; limit?: numb
         isNull(calendars.deletedAt),
         inArray(calendarConnections.status, ["active", "error"]),
         eq(scheduledEvents.status, "active"),
-        gt(scheduledEvents.endAt, t),
+        gt(scheduledEvents.endAt, lookback),
         lt(scheduledEvents.startAt, horizon),
         opts.calendarId ? eq(calendarLinkedEvents.calendarId, opts.calendarId) : or(isNull(calendarLinkedEvents.lastCheckedAt), lt(calendarLinkedEvents.lastCheckedAt, checkedBefore)),
       ),
@@ -129,8 +145,8 @@ export async function syncBookedEvents(opts: { calendarId?: string; limit?: numb
             continue;
           }
           checked++;
-          const change = detectChange(row, ev);
           const stamp = now();
+          const change = pastMeetingChange(detectChange(row, ev), row, stamp);
           if (!change) {
             await db.update(calendarLinkedEvents).set({ lastCheckedAt: stamp }).where(eq(calendarLinkedEvents.id, row.id));
             continue;
