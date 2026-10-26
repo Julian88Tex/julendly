@@ -371,7 +371,7 @@ test.describe("dashboard shell", () => {
     await loginAs(page, "owner@example.com");
     await page.setViewportSize({ width: 1440, height: 900 });
     for (const path of ["/app/integrations", "/app/dev/ui"]) {
-      // ThemeController applies the saved (light) theme once the page hydrates and then writes the theme cookie: wait
+      // ThemeController applies the saved theme (System when never chosen) once the page hydrates and then writes the theme cookie: wait
       // for that cookie so the switch below is not undone by a late hydration (the UI kit page hydrates slowly).
       await page.context().clearCookies({ name: "kairos_theme" });
       await page.goto(path);

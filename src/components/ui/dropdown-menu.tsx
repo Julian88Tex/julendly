@@ -2,7 +2,7 @@
 //
 // DropdownMenu (ARCHITECTURE 20.2, Radix): DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
 // (icon, destructive, href), DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuGroup and DropdownMenuSwitchItem
-// (the kebab menu "On/Off" row, ET-05). Classic look: white popover, 40px rows, #F4F8FF highlight, #476788 icons.
+// (the kebab menu "On/Off" row, ET-05) and DropdownMenuSegmented (a row of icon choices, e.g. Appearance). Classic look: white popover, 40px rows, #F4F8FF highlight, #476788 icons.
 // Keyboard: arrows, Home/End, typeahead, Enter/Space, Escape (focus returns to the trigger).
 "use client";
 
@@ -126,5 +126,40 @@ export function DropdownMenuSwitchItem({ checked, onCheckedChange, children, dis
         </span>
       </span>
     </RadixMenu.CheckboxItem>
+  );
+}
+
+export type DropdownMenuSegmentedProps = {
+  /** Accessible name of the choice group. */
+  label: string;
+  value: string;
+  options: readonly { value: string; label: string; icon: React.ReactNode }[];
+  onValueChange: (value: string) => void;
+};
+/** A row of equal-width radio choices (icon over a short label) that does not close the menu. */
+export function DropdownMenuSegmented({ label, value, options, onValueChange }: DropdownMenuSegmentedProps) {
+  return (
+    <RadixMenu.RadioGroup
+      aria-label={label}
+      value={value}
+      onValueChange={onValueChange}
+      className="mx-2 mb-1.5 grid auto-cols-fr grid-flow-col gap-1 rounded-[8px] bg-pebble p-1"
+    >
+      {options.map((o) => (
+        <RadixMenu.RadioItem
+          key={o.value}
+          value={o.value}
+          onSelect={(e) => e.preventDefault()}
+          className={cn(
+            "flex min-h-11 cursor-pointer select-none flex-col items-center justify-center gap-0.5 rounded-[6px] px-2 py-1 text-[12px] leading-4 font-semibold text-ink-2 outline-none",
+            "data-[highlighted]:text-ink data-[highlighted]:data-[state=unchecked]:bg-mist data-[state=checked]:bg-[var(--white)] data-[state=checked]:text-ink data-[state=checked]:shadow-[var(--shadow-next)]",
+            "[&_svg]:size-4 [&_svg]:shrink-0",
+          )}
+        >
+          {o.icon}
+          {o.label}
+        </RadixMenu.RadioItem>
+      ))}
+    </RadixMenu.RadioGroup>
   );
 }

@@ -381,7 +381,10 @@ describe("misc UI helpers", () => {
   it("applies the dashboard theme only on dashboard paths (GEN-22)", () => {
     expect(parseTheme("dark")).toBe("dark");
     expect(parseTheme("system")).toBe("system");
-    expect(parseTheme("weird")).toBe("light");
+    expect(parseTheme("light")).toBe("light");
+    // Never chosen: follows the device setting.
+    expect(parseTheme(undefined)).toBe("system");
+    expect(parseTheme("weird")).toBe("system");
     expect(themeAttribute("light")).toBeUndefined();
     expect(themeAttribute("dark")).toBe("dark");
     expect(themedPath("/app/scheduling")).toBe(true);

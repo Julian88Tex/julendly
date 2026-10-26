@@ -36,11 +36,12 @@
   color-scheme: light;
 }
 
-/* GEN-22 dark tokens: same names, dashboard only. Contrast checked against --white (surface) and --canvas. */
+/* GEN-22 dark tokens: same names, dashboard only, and the same palette as the dark public pages below (brand blue
+   #006bff keeps white text at 4.6:1). Contrast checked against --white (surface) and --canvas. */
 :root[data-theme="dark"] {
   --ink: #e4e9f0; --ink-2: #a9b7c6; --ink-3: #6f8094; --navy: #e4e9f0;
   --line: #2d3946; --line-medium: #4a5868; --canvas: #0e1217; --cloud: #131920; --pebble: #1b222b; --mist: #24303c; --white: #161c23;
-  --primary: #2563eb; --primary-hover: #1d4fd8; --primary-active: #1e40af; --primary-text: #7ab4ff;
+  --primary: #006bff; --primary-hover: #005fe0; --primary-active: #0052c2; --primary-text: #7ab4ff;
   --primary-soft: #102640; --primary-soft-2: #163257;
   --danger: #d53c00; --danger-text: #ff9a76; --danger-soft: #3d1c10;
   --success: #12904f; --success-text: #7fe3b4; --success-soft: #0f3324;
@@ -58,7 +59,7 @@
   :root[data-theme="system"] {
     --ink: #e4e9f0; --ink-2: #a9b7c6; --ink-3: #6f8094; --navy: #e4e9f0;
     --line: #2d3946; --line-medium: #4a5868; --canvas: #0e1217; --cloud: #131920; --pebble: #1b222b; --mist: #24303c; --white: #161c23;
-    --primary: #2563eb; --primary-hover: #1d4fd8; --primary-active: #1e40af; --primary-text: #7ab4ff;
+    --primary: #006bff; --primary-hover: #005fe0; --primary-active: #0052c2; --primary-text: #7ab4ff;
     --primary-soft: #102640; --primary-soft-2: #163257;
     --danger: #d53c00; --danger-text: #ff9a76; --danger-soft: #3d1c10;
     --success: #12904f; --success-text: #7fe3b4; --success-soft: #0f3324;

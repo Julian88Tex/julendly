@@ -74,7 +74,7 @@ export function WeeklyHoursEditor({ value, onChange, timeFormat = "12h", weekSta
               <span
                 aria-hidden="true"
                 title={name}
-                className="mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white"
+                className="mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-[var(--white)]"
               >
                 {WEEKDAY_INITIALS[day]}
               </span>

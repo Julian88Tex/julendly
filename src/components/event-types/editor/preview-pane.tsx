@@ -114,7 +114,7 @@ export function PreviewPane({ previewPath, draft, availabilityDirty, reloadKey, 
   return (
     <div className={cn("relative flex min-h-0 min-w-0 flex-col bg-canvas", className)}>
       {availabilityDirty && (
-        <div role="status" className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-4 py-2 text-body-sm font-semibold text-white shadow-[var(--shadow-pop)]">
+        <div role="status" className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-4 py-2 text-body-sm font-semibold text-[var(--white)] shadow-[var(--shadow-pop)]">
           <Info aria-hidden="true" className="size-4" />
           Save to update availability
         </div>

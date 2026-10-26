@@ -1,7 +1,8 @@
 // OWNER: foundation-ui.
 //
 // Shell server actions (SPEC GEN-20, GEN-23, AU-08): persist the sidebar collapse state (users.preferences
-// .sidebarCollapsed, merged into the jsonb so other preferences are kept), update the profile time zone from the
+// .sidebarCollapsed, merged into the jsonb so other preferences are kept) and the appearance (users.preferences.theme,
+// GEN-22, set from the account menu), update the profile time zone from the
 // GEN-23 banner (profile zone only, never schedule zones) and resend the verification email (rate limited).
 "use server";
 
@@ -17,6 +18,7 @@ import { zTimeZone } from "@/lib/validation";
 
 const Collapsed = z.boolean();
 const Zone = zTimeZone;
+const Theme = z.enum(["light", "dark", "system"]);
 
 export async function setSidebarCollapsed(collapsed: boolean): Promise<ActionResult<{ collapsed: boolean }>> {
   return runAction(Collapsed, collapsed, async (value, { actor, db }) => {
@@ -25,6 +27,17 @@ export async function setSidebarCollapsed(collapsed: boolean): Promise<ActionRes
       .set({ preferences: sql`coalesce(${users.preferences}, '{}'::jsonb) || ${JSON.stringify({ sidebarCollapsed: value })}::jsonb` })
       .where(eq(users.id, actor.user.id));
     return { collapsed: value };
+  });
+}
+
+export async function setThemePreference(theme: "light" | "dark" | "system"): Promise<ActionResult<{ theme: "light" | "dark" | "system" }>> {
+  return runAction(Theme, theme, async (value, { actor, db }) => {
+    await db
+      .update(users)
+      .set({ preferences: sql`coalesce(${users.preferences}, '{}'::jsonb) || ${JSON.stringify({ theme: value })}::jsonb` })
+      .where(eq(users.id, actor.user.id));
+    revalidatePath("/app", "layout");
+    return { theme: value };
   });
 }
 

@@ -2,15 +2,17 @@
 //
 // GEN-22 appearance plumbing shared by the root layout (server: reads the cookie and sets data-theme on <html> before
 // paint for /app pages), the dashboard ThemeController (client: applies users.preferences.theme and mirrors it in the
-// cookie) and Settings > Profile (call applyTheme(theme) after saving for an immediate switch). Client and server safe.
+// cookie) and the account menu's Appearance switch (applyTheme(theme) for an immediate switch, then the saved
+// preference). Client and server safe.
 
 export type ThemePreference = "light" | "dark" | "system";
 
 /** First-party preference cookie (essential: UI preference, no tracking). */
 export const THEME_COOKIE = "kairos_theme";
 
+/** Saved preference; anything else (never chosen) follows the device setting, like the public pages. */
 export function parseTheme(value: unknown): ThemePreference {
-  return value === "dark" || value === "system" ? value : "light";
+  return value === "dark" || value === "light" ? value : "system";
 }
 
 /** Paths that use the dashboard theme (public pages always render the light classic tokens). */
