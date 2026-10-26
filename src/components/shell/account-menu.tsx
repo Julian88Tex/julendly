@@ -10,7 +10,7 @@
 "use client";
 
 import { CalendarSync, ChevronDown, HelpCircle, KeyRound, Link as LinkIcon, LogOut, Monitor, Moon, Palette, Share2, Sun, User } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { copyText } from "@/lib/client/use-copy";
 import { Avatar } from "../ui/avatar";
 import {
@@ -59,6 +59,9 @@ export function AccountMenu({ user, publicUrl, compact, operatorEmail, theme = "
   // The last preference the server confirmed, and the latest save (an older save's failure must not undo a newer choice).
   const confirmed = useRef<ThemePreference>(theme);
   const latestSave = useRef(0);
+  useEffect(() => {
+    confirmed.current = theme;
+  }, [theme]);
   if (savedTheme !== theme) {
     setSavedTheme(theme);
     setAppearance(theme);
