@@ -77,8 +77,17 @@ describe("design tokens (ARCHITECTURE 20.1)", () => {
     const system = declarations(block(block(css, /@media \(prefers-color-scheme: dark\)\s*\{/), /:root\[data-theme="system"\]\s*\{/));
     for (const name of ["--ink", "--ink-2", "--line", "--canvas", "--white", "--primary", "--primary-text", "--primary-soft", "--danger-text", "--success-text", "--warning-text"]) {
       expect(dark.get(name), name).toBeDefined();
-      expect(dark.get(name), name).not.toBe(cssRoot.get(name));
+      // The brand blue fill is the same in both themes (white text 4.6:1); everything else changes.
+      if (name !== "--primary") expect(dark.get(name), name).not.toBe(cssRoot.get(name));
       expect(system.get(name), name).toBe(dark.get(name));
+    }
+  });
+
+  it("gives the dark dashboard the same palette as the dark public pages", () => {
+    const dark = declarations(block(css, /:root\[data-theme="dark"\]\s*\{/));
+    const publicDark = declarations(block(css, /:root\[data-public-theme="dark"\] \[data-public-auto\]\s*\{/));
+    for (const [name, value] of dark) {
+      if (publicDark.has(name)) expect(value, name).toBe(publicDark.get(name));
     }
   });
 

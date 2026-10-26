@@ -25,7 +25,7 @@ import { fileUrl } from "@/lib/files";
 import { maybeRunDueJobs } from "@/lib/jobs";
 import { log } from "@/lib/logger";
 import { now } from "@/lib/time/now";
-import { resendVerificationEmail, setSidebarCollapsed, updateProfileTimeZone } from "./_shell/actions";
+import { resendVerificationEmail, setSidebarCollapsed, setThemePreference, updateProfileTimeZone } from "./_shell/actions";
 import { cronEndpointUrl, cronWarningApplies, getLastCronAt, getOverdueReminderCount, publicLinkFor } from "./_shell/data";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -55,6 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   };
   const checkCron = cronWarningApplies(lastCronAt);
   const showCron = actor.isInstanceAdmin && (checkCron || overdueReminders > 0);
+  const theme = parseTheme(user.preferences?.theme);
 
   const banners = (
     <>
@@ -76,7 +77,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-dvh bg-canvas text-ink">
-      <ThemeController theme={parseTheme(user.preferences?.theme)} />
+      <ThemeController theme={theme} />
       <AppSidebar
         canSeeAdminCenter={adminCenter}
         initialCollapsed={user.preferences?.sidebarCollapsed === true}
@@ -91,6 +92,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           banners={banners}
           publicUrl={publicLinkFor(user.slug)}
           operatorEmail={operator?.email ?? null}
+          theme={theme}
+          onThemeChange={setThemePreference}
         />
         <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1280px] min-w-0 flex-1 px-4 pt-5 pb-16 outline-none md:px-8 md:pt-3">
           {children}

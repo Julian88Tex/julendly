@@ -11,6 +11,7 @@ import type * as React from "react";
 import { Logo } from "../ui/logo";
 import { AccountMenu } from "./account-menu";
 import { setMobileNavOpen, useMobileNavOpen } from "./mobile-nav";
+import type { ThemePreference } from "./theme";
 import type { ShellUser } from "./types";
 
 export type AppHeaderProps = {
@@ -24,9 +25,12 @@ export type AppHeaderProps = {
   publicUrl?: string | null;
   /** Instance operator email for the Help center's "Report a problem" link. */
   operatorEmail?: string | null;
+  /** The saved appearance (GEN-22) and the action that saves a new one (account menu's Appearance switch). */
+  theme?: ThemePreference;
+  onThemeChange?: (theme: ThemePreference) => Promise<{ ok: boolean }>;
 };
 
-export function AppHeader({ user, banners, publicUrl, operatorEmail }: AppHeaderProps) {
+export function AppHeader({ user, banners, publicUrl, operatorEmail, theme, onThemeChange }: AppHeaderProps) {
   const drawerOpen = useMobileNavOpen();
   return (
     <header className="flex min-w-0 flex-col">
@@ -43,12 +47,12 @@ export function AppHeader({ user, banners, publicUrl, operatorEmail }: AppHeader
         </button>
         <Logo variant="full" href="/app/scheduling" size={28} />
         <div className="ml-auto">
-          <AccountMenu user={user} publicUrl={publicUrl} operatorEmail={operatorEmail} compact />
+          <AccountMenu user={user} publicUrl={publicUrl} operatorEmail={operatorEmail} theme={theme} onThemeChange={onThemeChange} compact />
         </div>
       </div>
       {/* Desktop: top-right actions. */}
       <div className="hidden items-center justify-end gap-3 px-8 pt-4 pb-1 md:flex">
-        <AccountMenu user={user} publicUrl={publicUrl} operatorEmail={operatorEmail} />
+        <AccountMenu user={user} publicUrl={publicUrl} operatorEmail={operatorEmail} theme={theme} onThemeChange={onThemeChange} />
       </div>
       {banners && <div className="flex min-w-0 flex-col gap-2 px-4 pt-3 empty:hidden md:px-8">{banners}</div>}
     </header>

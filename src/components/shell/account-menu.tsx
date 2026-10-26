@@ -3,18 +3,29 @@
 // AccountMenu (SPEC BR-15 narrowed by docs/SCOPE.md, walkthrough 4.2): the header avatar (32px, initials fallback) with
 // a chevron opening a 280px menu: name and email; "Account settings" (Profile, Branding, My Link, Login and security:
 // the settings pages docs/SCOPE.md keeps); "Calendar sync" (Calendar settings); "Share your link" (copies the public
-// URL); "Help" (the in-app Help center); then "Log out" (POST /api/auth/logout, AU-05). Notifications, Cookie settings,
+// URL); "Help" (the in-app Help center); "Appearance" (Light, Dark or System: GEN-22, applied at once and saved in
+// users.preferences.theme; System follows the device setting and is the default); then "Log out" (POST /api/auth/logout, AU-05). Notifications, Cookie settings,
 // Admin center and Invite users lead to areas docs/SCOPE.md does not build, so they are not offered. Keyboard
 // navigable, Escape closes.
 "use client";
 
-import { CalendarSync, ChevronDown, HelpCircle, KeyRound, Link as LinkIcon, LogOut, Palette, Share2, User } from "lucide-react";
-import { useRef, useState } from "react";
+import { CalendarSync, ChevronDown, HelpCircle, KeyRound, Link as LinkIcon, LogOut, Monitor, MoonStar, Palette, Share2, SunMedium, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { copyText } from "@/lib/client/use-copy";
 import { Avatar } from "../ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { toast } from "../ui/toast";
+import { AppearanceSwitch } from "./appearance-switch";
 import { HelpCenterDialog } from "./help-center";
+import { applyTheme, type ThemePreference } from "./theme";
 import type { ShellUser } from "./types";
 
 export type AccountMenuProps = {
@@ -29,10 +40,32 @@ export type AccountMenuProps = {
   compact?: boolean;
   /** Instance operator email for the Help center's "Report a problem" link (MK-02). */
   operatorEmail?: string | null;
+  /** The saved appearance; the Appearance switch is hidden without onThemeChange. */
+  theme?: ThemePreference;
+  onThemeChange?: (theme: ThemePreference) => Promise<{ ok: boolean }>;
 };
 
-export function AccountMenu({ user, publicUrl, compact, operatorEmail }: AccountMenuProps) {
+const THEME_OPTIONS = [
+  { value: "light", label: "Light", icon: <SunMedium aria-hidden="true" /> },
+  { value: "dark", label: "Dark", icon: <MoonStar aria-hidden="true" /> },
+  { value: "system", label: "System", icon: <Monitor aria-hidden="true" /> },
+] as const;
+
+export function AccountMenu({ user, publicUrl, compact, operatorEmail, theme = "system", onThemeChange }: AccountMenuProps) {
   const logoutForm = useRef<HTMLFormElement>(null);
+  // Shows the choice at once; follows the saved preference again when it changes (after the save revalidates).
+  const [appearance, setAppearance] = useState<ThemePreference>(theme);
+  const [savedTheme, setSavedTheme] = useState(theme);
+  // The last preference the server confirmed, and the latest save (an older save's failure must not undo a newer choice).
+  const confirmed = useRef<ThemePreference>(theme);
+  const latestSave = useRef(0);
+  useEffect(() => {
+    confirmed.current = theme;
+  }, [theme]);
+  if (savedTheme !== theme) {
+    setSavedTheme(theme);
+    setAppearance(theme);
+  }
   const [helpCenter, setHelpCenter] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   return (
@@ -89,6 +122,31 @@ export function AccountMenu({ user, publicUrl, compact, operatorEmail }: Account
           <DropdownMenuItem icon={<HelpCircle aria-hidden="true" />} onSelect={() => setHelpCenter(true)}>
             Help
           </DropdownMenuItem>
+          {onThemeChange && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+              <AppearanceSwitch
+                label="Appearance"
+                value={appearance}
+                options={THEME_OPTIONS}
+                onValueChange={async (value) => {
+                  const next = value as ThemePreference;
+                  const save = ++latestSave.current;
+                  setAppearance(next);
+                  applyTheme(next);
+                  const saved = await onThemeChange(next).then((r) => r.ok, () => false);
+                  if (saved) confirmed.current = next;
+                  if (save !== latestSave.current) return;
+                  if (!saved) {
+                    setAppearance(confirmed.current);
+                    applyTheme(confirmed.current);
+                    toast.error("Couldn't save your appearance setting.");
+                  }
+                }}
+              />
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem icon={<LogOut aria-hidden="true" />} onSelect={() => logoutForm.current?.requestSubmit()}>
             Log out
