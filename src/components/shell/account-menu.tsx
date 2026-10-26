@@ -19,11 +19,11 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSegmented,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { toast } from "../ui/toast";
+import { AppearanceSwitch } from "./appearance-switch";
 import { HelpCenterDialog } from "./help-center";
 import { applyTheme, type ThemePreference } from "./theme";
 import type { ShellUser } from "./types";
@@ -126,7 +126,7 @@ export function AccountMenu({ user, publicUrl, compact, operatorEmail, theme = "
             <>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-              <DropdownMenuSegmented
+              <AppearanceSwitch
                 label="Appearance"
                 value={appearance}
                 options={THEME_OPTIONS}
