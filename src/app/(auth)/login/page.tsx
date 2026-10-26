@@ -4,7 +4,8 @@
 // Microsoft (when configured), divider "or", the two-step email and password form, and the footer "Don't have an
 // account? Sign up for free" (hidden when signups are closed). ?next= returns to a same-site path after login;
 // ?error= shows an OAuth callback message. Signed-in visitors go straight to `next`.
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { buttonClassName } from "@/components/ui/button";
 import { redirectIfSignedIn } from "@/lib/auth/guards";
@@ -29,6 +30,11 @@ export default async function LogInToYourAccountPage({ searchParams }: Props) {
   const availability = await getSignupAvailability();
   const oauthError = oauthErrorFromSearchParams(sp);
   const jslice = jsliceUrl();
+  // Single sign in: quietly ask JSlice first. It sends a signed-in visitor straight back signed in, and everyone else
+  // back here with ?jslice=none so the normal login shows. Errors and a fresh log out skip the attempt.
+  if (jslice && !oauthError && sp.jslice !== "none") {
+    redirect(`${jslice}/launch/${JSLICE_APP_ID}?silent=1&next=${encodeURIComponent(next ?? "/app/scheduling")}` as Route);
+  }
   return (
     <AuthShell
       title="Log in to your account"
