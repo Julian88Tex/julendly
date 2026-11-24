@@ -226,7 +226,7 @@ other accounts exist, and never overwrites your setup (it also accepts `CRON_SEC
      sent again with **Resend**.
    - Optional: upload your logo in **Settings > Branding** (the bootstrap cannot copy it from Calendly).
 
-## 8. Reminder dispatcher: a Google Apps Script every 5 minutes
+## 8. Reminder dispatcher: a Google Apps Script every 15 minutes
 
 Vercel's Hobby plan runs the built-in cron (`vercel.json`) once a day only. Reminders, calendar sync and the other
 background jobs need `GET {APP_URL}/api/cron` every few minutes. A Google Apps Script time trigger does it for free
@@ -242,7 +242,7 @@ from your Google account.
 /**
  * Kairos reminder dispatcher. Calls GET {APP_URL}/api/cron with "Authorization: Bearer {CRON_SECRET}".
  * Script properties: APP_URL (for example https://kairos-julian.vercel.app) and CRON_SECRET.
- * Run installTrigger once; it then runs pingKairos every 5 minutes.
+ * Run installTrigger once; it then runs pingKairos every 15 minutes.
  */
 function pingKairos() {
   var props = PropertiesService.getScriptProperties();
@@ -266,12 +266,12 @@ function pingKairos() {
   console.log(body);
 }
 
-/** Run once by hand: replaces any earlier pingKairos trigger with one every 5 minutes, then pings once. */
+/** Run once by hand: replaces any earlier pingKairos trigger with one every 15 minutes, then pings once. */
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
     if (trigger.getHandlerFunction() === 'pingKairos') ScriptApp.deleteTrigger(trigger);
   });
-  ScriptApp.newTrigger('pingKairos').timeBased().everyMinutes(5).create();
+  ScriptApp.newTrigger('pingKairos').timeBased().everyMinutes(15).create();
   pingKairos();
 }
 ```
@@ -280,11 +280,11 @@ function installTrigger() {
    to an external service" and "Allow this application to run when you are not present"); allow it. If Google warns
    that the app is unverified, choose **Advanced > Go to Kairos reminder dispatcher (unsafe)**: it is your own script.
 5. The execution log shows a line like `{"ok":true,"mode":"authorized","ran":0,"succeeded":0,"failed":0,"remaining":0}`.
-   **Triggers** (clock icon) now lists `pingKairos`, time-based, every 5 minutes. Open the trigger and set **Failure
+   **Triggers** (clock icon) now lists `pingKairos`, time-based, every 15 minutes. Open the trigger and set **Failure
    notification settings** to **Notify me immediately** if you want an email the moment it stops working.
 
 Notes: each run normally takes a second or two, well within the free quotas of a personal Google account (90 minutes
-of trigger runtime and 20,000 URL fetches per day; this uses about 288 fetches). Jobs are idempotent, so an occasional
+of trigger runtime and 20,000 URL fetches per day; this uses about 96 fetches). Jobs are idempotent, so an occasional
 failed or late run is harmless: the next run catches up. If you change `CRON_SECRET` on Vercel, update the script
 property too.
 
@@ -297,7 +297,7 @@ run of the script.
 
 ## 9. Verify that reminders are being dispatched
 
-1. **The trigger runs.** In Apps Script, **Executions** shows `pingKairos` as **Completed** every 5 minutes. A manual
+1. **The trigger runs.** In Apps Script, **Executions** shows `pingKairos` as **Completed** every 15 minutes. A manual
    check from your terminal:
 
    ```sh
@@ -307,9 +307,9 @@ run of the script.
    ```
 
 2. **Kairos sees it.** Signed in as yourself (the instance admin), the app shows the banner "Reminders may be sent late"
-   when `/api/cron` has not run for 15 minutes, or "{n} reminders are past their send time." when reminders are late.
+   when `/api/cron` has not run for 35 minutes, or "{n} reminders are past their send time." when reminders are late.
    No banner means the dispatcher is working. In the Neon SQL Editor, the last run is:
-   `select value from instance_settings where key = 'last_cron_at';` (within the last 5 minutes).
+   `select value from instance_settings where key = 'last_cron_at';` (within the last 15 minutes).
 3. **A reminder actually arrives.** Book a test meeting on `{APP_URL}/julianjoseph/30min` with a second email address
    you can read, about 24 hours and 15 minutes from now (the 24 hour reminder is then due in about 15 minutes). The
    confirmation email arrives right away (from your Gmail). In the Neon SQL Editor:

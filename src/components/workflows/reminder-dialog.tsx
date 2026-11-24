@@ -300,7 +300,7 @@ function ReminderForm({ kind, view, onSaved, onOpenChange, onDirty, formId, onSa
         {showShortHint && (
           <Banner variant="warning" role="status">
             <span className="flex flex-col gap-2">
-              <span>Short timings need a pinger that runs every 5 minutes. Messages may be sent late.</span>
+              <span>Short timings need a pinger that runs every 15 minutes. Messages may be sent late.</span>
               <span className="flex min-w-0 flex-wrap items-center gap-2">
                 <code className="min-w-0 rounded-[6px] border border-line bg-surface px-2 py-1 text-[13px] break-all text-ink">{view.delivery.cronUrl}</code>
                 <CopyButton value={view.delivery.cronUrl} size="sm" label="Copy URL" toastMessage="URL copied" />

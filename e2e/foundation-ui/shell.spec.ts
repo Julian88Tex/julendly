@@ -307,14 +307,14 @@ test.describe("dashboard shell", () => {
   });
 
   test("the cron warning shows for the instance admin and opens the setup steps", async ({ page, api, loginAs }) => {
-    // Record a cron tick, then let 16 minutes pass on the business clock.
+    // Record a cron tick, then let 36 minutes pass on the business clock.
     const tick = await page.request.get("/api/cron");
     expect(tick.status()).toBe(200);
-    await api.advanceTime(16 * 60_000);
+    await api.advanceTime(36 * 60_000);
 
     await loginAs(page, "owner@example.com");
     await page.goto("/app/scheduling");
-    const banner = page.getByRole("status").filter({ hasText: "Reminders may be sent late. Set up a pinger that calls /api/cron every 5 minutes." });
+    const banner = page.getByRole("status").filter({ hasText: "Reminders may be sent late. Set up a pinger that calls /api/cron every 15 minutes." });
     await expect(banner).toBeVisible();
     const dialog = page.getByRole("dialog", { name: "Set up a pinger" });
     // The banner is server rendered: retry the click until the page has hydrated (slow first loads in next dev).
@@ -323,7 +323,7 @@ test.describe("dashboard shell", () => {
       await expect(dialog).toBeVisible({ timeout: 1_000 });
     }).toPass({ timeout: 20_000 });
     await expect(dialog.getByText(/\/api\/cron$/)).toBeVisible();
-    await expect(dialog.getByText("Last run:")).toContainText("16 minutes ago");
+    await expect(dialog.getByText("Last run:")).toContainText("36 minutes ago");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await banner.getByRole("button", { name: "Dismiss" }).click();

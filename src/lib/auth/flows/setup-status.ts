@@ -208,7 +208,7 @@ export async function instanceHasAccount(): Promise<boolean | null> {
 
 export type BackgroundStatus = {
   lastCronAt: Date | null;
-  /** The last tick is older than 15 minutes (or there was none). */
+  /** The last tick is older than 35 minutes (or there was none). */
   stale: boolean;
   /** Pending jobs that are already due. */
   dueJobs: number;

@@ -131,7 +131,7 @@ describe("delivery timing (NT-23)", () => {
     env.CRON_SECRET = "x-secret";
     await route.GET(req("Bearer x-secret"));
     expect(await getCronStatus(t.db)).toMatchObject({ stale: false });
-    setFakeNow("2034-03-01T10:16:00Z");
+    setFakeNow("2034-03-01T10:36:00Z");
     expect((await getCronStatus(t.db)).stale).toBe(true);
   });
 });

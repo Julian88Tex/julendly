@@ -129,8 +129,8 @@ test.describe("golden path: host", () => {
     await api.runJobs({ types: ["workflows.*"] });
     expect(await api.outbox({ to: email, template: "workflows.invitee_reminder" })).toHaveLength(0);
 
-    // 20 minutes late without a dispatcher run: the pending job shows on the dashboard for the instance admin.
-    await api.setTime("2030-10-07T18:20:00Z");
+    // 40 minutes late without a dispatcher run: the pending job shows on the dashboard for the instance admin.
+    await api.setTime("2030-10-07T18:40:00Z");
     await loginAs(page, OWNER);
     await page.goto("/app/scheduling", SLOW);
     await expect(page.getByText("1 reminder is past its send time.")).toBeVisible(SLOW);

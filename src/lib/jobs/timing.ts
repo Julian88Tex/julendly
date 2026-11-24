@@ -4,7 +4,7 @@
 // - reminderDecision: a reminder that runs late still sends (even more than 30 minutes late) unless its meeting has
 //   already started; then it is skipped with reason "too_late". Workflows calls it before sending a "before event"
 //   message.
-// - getCronStatus: instance_settings.last_cron_at and whether it is older than 15 minutes (the admin overview warning,
+// - getCronStatus: instance_settings.last_cron_at and whether it is older than 35 minutes (the admin overview warning,
 //   ADM-03, and the workflow builder hint for timings under 30 minutes, NT-11).
 import "server-only";
 import { eq } from "drizzle-orm";
@@ -13,7 +13,7 @@ import { instanceSettings } from "@/db/schema";
 import { now } from "../time/now";
 
 /** last_cron_at older than this triggers the freshness warnings. */
-export const CRON_STALE_MS = 15 * 60 * 1000;
+export const CRON_STALE_MS = 35 * 60 * 1000;
 /** Reminders this late are logged as late (they still send while the meeting has not started). */
 export const REMINDER_LATE_MS = 30 * 60 * 1000;
 
