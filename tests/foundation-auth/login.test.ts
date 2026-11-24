@@ -128,7 +128,8 @@ describe("logout (AU-05)", () => {
 
     const res = await logoutRoute(new Request("http://localhost:3000/api/auth/logout", { method: "POST", headers: { origin: "http://localhost:3000" } }));
     expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toBe("http://localhost:3000/login");
+    // ?jslice=none stops the login page from signing straight back in through JSlice.
+    expect(res.headers.get("location")).toBe("http://localhost:3000/login?jslice=none");
     expect(jar.has(SESSION_COOKIE)).toBe(false);
     // Reusing the old cookie value is rejected.
     expect(await lookupSession(t.db, token)).toBeNull();
