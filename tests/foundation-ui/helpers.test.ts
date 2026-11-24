@@ -327,11 +327,11 @@ describe("misc UI helpers", () => {
     expect(brandingStyle({ primaryColor: "ff0000", textColor: "nope" })).toEqual({ "--primary-color": "#ff0000" });
   });
 
-  it("flags a stale cron tick after 15 minutes", () => {
+  it("flags a stale cron tick after 35 minutes", () => {
     const now = Date.UTC(2026, 9, 12, 12, 0);
     expect(isCronStale(null, now)).toBe(true);
-    expect(isCronStale(new Date(now - 14 * 60_000).toISOString(), now)).toBe(false);
-    expect(isCronStale(new Date(now - 16 * 60_000).toISOString(), now)).toBe(true);
+    expect(isCronStale(new Date(now - 34 * 60_000).toISOString(), now)).toBe(false);
+    expect(isCronStale(new Date(now - 36 * 60_000).toISOString(), now)).toBe(true);
     expect(isCronStale("garbage", now)).toBe(true);
   });
 

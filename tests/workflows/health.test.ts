@@ -33,13 +33,13 @@ describe("getReminderDeliveryHealth", () => {
     expect(healthy).toMatchObject({ dispatcher: "poller", cronStale: false, overdueCount: 0, warning: false });
 
     const [e] = await scheduledFor(t.db, m.invitee!.id);
-    await t.db.update(workflowExecutions).set({ runAt: new Date(now().getTime() - 20 * MINUTE) }).where(eq(workflowExecutions.id, e!.id));
+    await t.db.update(workflowExecutions).set({ runAt: new Date(now().getTime() - 40 * MINUTE) }).where(eq(workflowExecutions.id, e!.id));
     const overdue = await getReminderDeliveryHealth({ organizationId: actor.orgId, db: t.db });
     expect(overdue).toMatchObject({ overdueCount: 1, warning: true });
     expect(overdue.oldestOverdueAt).not.toBeNull();
     expect(await getReminderDeliveryHealth({ organizationId: other.actor.orgId, db: t.db })).toMatchObject({ overdueCount: 0, warning: false });
-    // Ten minutes late is not overdue yet.
-    await t.db.update(workflowExecutions).set({ runAt: new Date(now().getTime() - 10 * MINUTE) }).where(eq(workflowExecutions.id, e!.id));
+    // Twenty minutes late is not overdue yet.
+    await t.db.update(workflowExecutions).set({ runAt: new Date(now().getTime() - 20 * MINUTE) }).where(eq(workflowExecutions.id, e!.id));
     expect((await getReminderDeliveryHealth({ organizationId: actor.orgId, db: t.db })).overdueCount).toBe(0);
   });
 
@@ -68,9 +68,9 @@ describe("getReminderDeliveryHealth", () => {
     expect((await getReminderDeliveryHealth({ db: t.db })).overdueCount).toBe(0);
   });
 
-  it("where cron dispatches jobs, a tick older than 15 minutes warns", async () => {
+  it("where cron dispatches jobs, a tick older than 35 minutes warns", async () => {
     vi.stubEnv("E2E_TEST_MODE", "1");
-    await setLastCron(new Date(now().getTime() - 20 * MINUTE));
+    await setLastCron(new Date(now().getTime() - 40 * MINUTE));
     expect(await getReminderDeliveryHealth({ db: t.db })).toMatchObject({ dispatcher: "cron", cronStale: true, warning: true });
     await setLastCron(new Date(now().getTime() - 2 * MINUTE));
     expect(await getReminderDeliveryHealth({ db: t.db })).toMatchObject({ dispatcher: "cron", cronStale: false });

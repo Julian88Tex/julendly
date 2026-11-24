@@ -36,7 +36,7 @@ export function cronWarningApplies(lastCronAt: string | null): boolean {
   return false;
 }
 
-/** Reminders more than 15 minutes past their send time across the instance (0 when the check fails). */
+/** Reminders more than 30 minutes past their send time across the instance (0 when the check fails). */
 export async function getOverdueReminderCount(): Promise<number> {
   try {
     return (await getReminderDeliveryHealth()).overdueCount;

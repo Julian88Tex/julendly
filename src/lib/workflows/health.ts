@@ -1,10 +1,10 @@
 // Reminder delivery health (SPEC GEN-16, NT-11, NT-23; docs/SCOPE.md priority 5): whether timed reminders can be
 // trusted to go out on time on this deployment.
 // - dispatcher "cron": on Vercel only /api/cron (plus after() and opportunistic page runs) dispatches due jobs, so a
-//   stale instance_settings.last_cron_at (older than 15 minutes, or never) means reminders can be late. E2E runs have
+//   stale instance_settings.last_cron_at (older than 35 minutes, or never) means reminders can be late. E2E runs have
 //   no poller either and follow the same rule once a tick was recorded (like the dashboard banner).
 // - dispatcher "poller": self-hosted servers run the in-process poller every 30 seconds; no cron needed.
-// - overdue: scheduled executions more than 15 minutes past their run time whose workflows.execute job is still
+// - overdue: scheduled executions more than 30 minutes past their run time whose workflows.execute job is still
 //   waiting to run (pending, or running with a lost worker), for any dispatcher. This catches a dispatcher that stopped
 //   even when cron ticks are recorded (for example a failing job runner, or a self-hosted poller that died), so the
 //   owner sees real symptoms rather than only the trigger's freshness. Executions whose job is gone, dead or canceled
@@ -20,15 +20,15 @@ import { now as clockNow } from "@/lib/time/now";
 import { EXECUTE_JOB } from "./store";
 
 /** A scheduled execution this far past its run time counts as overdue. */
-export const OVERDUE_AFTER_MS = 15 * 60 * 1000;
+export const OVERDUE_AFTER_MS = 30 * 60 * 1000;
 
 export type ReminderDeliveryHealth = {
   dispatcher: "cron" | "poller";
   /** instance_settings.last_cron_at (ISO) or null. */
   lastCronAt: string | null;
-  /** The cron trigger is what dispatches jobs here and it has not run in the last 15 minutes. */
+  /** The cron trigger is what dispatches jobs here and it has not run in the last 35 minutes. */
   cronStale: boolean;
-  /** Scheduled messages more than 15 minutes overdue (scoped to the organization when given). */
+  /** Scheduled messages more than 30 minutes overdue (scoped to the organization when given). */
   overdueCount: number;
   oldestOverdueAt: string | null;
   /** Show a warning: cron is stale where it matters, or messages are overdue. */
@@ -71,5 +71,5 @@ export async function getReminderDeliveryHealth(opts: { organizationId?: string 
   };
 }
 
-/** Exported for the cron freshness copy: the staleness window of the trigger (15 minutes). */
+/** Exported for the cron freshness copy: the staleness window of the trigger (35 minutes). */
 export const CRON_STALE_AFTER_MS = CRON_STALE_MS;

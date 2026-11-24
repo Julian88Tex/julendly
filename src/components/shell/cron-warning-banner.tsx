@@ -1,11 +1,11 @@
 // OWNER: foundation-ui.
 //
-// CronWarningBanner (SPEC GEN-16, docs/SCOPE.md priority 5): for instance admins when /api/cron last ran more than 15
-// minutes ago (or never): "Reminders may be sent late. Set up a pinger that calls /api/cron every 5 minutes." with a
-// "See setup steps" button that opens the setup instructions in a dialog (a free external pinger every 5 minutes, the
+// CronWarningBanner (SPEC GEN-16, docs/SCOPE.md priority 5): for instance admins when /api/cron last ran more than 35
+// minutes ago (or never): "Reminders may be sent late. Set up a pinger that calls /api/cron every 15 minutes." with a
+// "See setup steps" button that opens the setup instructions in a dialog (a free external pinger every 15 minutes, the
 // exact URL with a copy button, the Authorization header when CRON_SECRET is set, and when cron last ran). The cron
 // staleness check applies only where cron is the trigger (Vercel; self-hosted servers run the in-process poller,
-// checkCron=false). On any deployment, reminders more than 15 minutes past their send time (getReminderDeliveryHealth
+// checkCron=false). On any deployment, reminders more than 30 minutes past their send time (getReminderDeliveryHealth
 // overdueCount) also show it: "{n} reminders are past their send time." Dismissible for the session.
 "use client";
 
@@ -26,13 +26,13 @@ export type CronWarningBannerProps = {
   secretConfigured?: boolean;
   /** Cron is the job trigger on this deployment, so a stale tick warns (default true; false on self-hosted servers). */
   checkCron?: boolean;
-  /** Reminders more than 15 minutes past their send time (getReminderDeliveryHealth().overdueCount). */
+  /** Reminders more than 30 minutes past their send time (getReminderDeliveryHealth().overdueCount). */
   overdueReminders?: number;
 };
 
-export const CRON_STALE_AFTER_MS = 15 * 60 * 1000;
+export const CRON_STALE_AFTER_MS = 35 * 60 * 1000;
 
-/** True when the last tick is missing or older than 15 minutes. */
+/** True when the last tick is missing or older than 35 minutes (two missed 15 minute runs). */
 export function isCronStale(lastCronAt: string | null, nowMs: number): boolean {
   const last = lastCronAt ? Date.parse(lastCronAt) : Number.NaN;
   return !(Number.isFinite(last) && nowMs - last <= CRON_STALE_AFTER_MS);
@@ -58,7 +58,7 @@ export function overdueRemindersLabel(n: number): string {
 
 /** The banner text, or null when nothing is wrong (cron fresh or not the trigger, and no overdue reminders). */
 export function cronBannerMessage({ stale, overdueReminders = 0 }: { stale: boolean; overdueReminders?: number }): string | null {
-  const pinger = "Set up a pinger that calls /api/cron every 5 minutes.";
+  const pinger = "Set up a pinger that calls /api/cron every 15 minutes.";
   if (overdueReminders > 0) return stale ? `${overdueRemindersLabel(overdueReminders)} ${pinger}` : overdueRemindersLabel(overdueReminders);
   return stale ? `Reminders may be sent late. ${pinger}` : null;
 }
@@ -68,12 +68,12 @@ function CronSetupSteps({ cronUrl, secretConfigured, lastRun, overdue }: { cronU
     <div className="flex flex-col gap-4 text-body-md text-ink">
       <p>
         Reminder emails and other timed jobs run whenever /api/cron is called. The built-in schedule runs only once a day (Vercel Cron on the
-        Hobby plan), so a pinger (this site uses a Google Apps Script every 5 minutes) keeps reminders on time.
+        Hobby plan), so a pinger (this site uses a Google Apps Script every 15 minutes) keeps reminders on time.
       </p>
       <ol className="flex list-decimal flex-col gap-3 pl-5">
         <li>Create a free cron job at cron-job.org, or a schedule in Upstash QStash.</li>
         <li className="flex flex-col gap-2">
-          <span>Have it call this URL every 5 minutes (GET or POST):</span>
+          <span>Have it call this URL every 15 minutes (GET or POST):</span>
           <span className="flex min-w-0 flex-wrap items-center gap-2">
             <code className="min-w-0 rounded-[6px] border border-line bg-pebble px-2 py-1 text-[13px] break-all text-ink">{cronUrl}</code>
             <CopyButton value={cronUrl} size="sm" label="Copy URL" toastMessage="URL copied" />

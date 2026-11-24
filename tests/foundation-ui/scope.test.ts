@@ -155,17 +155,17 @@ describe("GEN-16 cron warning helpers", () => {
     expect(cronLastRunLabel(new Date(now + 5_000).toISOString(), now)).toBe("Less than a minute ago");
   });
 
-  it("is stale at exactly 15 minutes plus one millisecond", () => {
-    expect(isCronStale(ago(15 * 60_000), now)).toBe(false);
-    expect(isCronStale(ago(15 * 60_000 + 1), now)).toBe(true);
+  it("is stale at exactly 35 minutes plus one millisecond", () => {
+    expect(isCronStale(ago(35 * 60_000), now)).toBe(false);
+    expect(isCronStale(ago(35 * 60_000 + 1), now)).toBe(true);
   });
 
   it("warns about a stale cron tick and, on any deployment, about reminders past their send time", () => {
     expect(cronBannerMessage({ stale: false })).toBeNull();
     expect(cronBannerMessage({ stale: false, overdueReminders: 0 })).toBeNull();
-    expect(cronBannerMessage({ stale: true })).toBe("Reminders may be sent late. Set up a pinger that calls /api/cron every 5 minutes.");
+    expect(cronBannerMessage({ stale: true })).toBe("Reminders may be sent late. Set up a pinger that calls /api/cron every 15 minutes.");
     expect(cronBannerMessage({ stale: false, overdueReminders: 3 })).toBe("3 reminders are past their send time.");
-    expect(cronBannerMessage({ stale: true, overdueReminders: 3 })).toBe("3 reminders are past their send time. Set up a pinger that calls /api/cron every 5 minutes.");
+    expect(cronBannerMessage({ stale: true, overdueReminders: 3 })).toBe("3 reminders are past their send time. Set up a pinger that calls /api/cron every 15 minutes.");
     expect(overdueRemindersLabel(1)).toBe("1 reminder is past its send time.");
   });
 });
