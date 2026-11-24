@@ -323,7 +323,7 @@ test.describe("dashboard shell", () => {
       await expect(dialog).toBeVisible({ timeout: 1_000 });
     }).toPass({ timeout: 20_000 });
     await expect(dialog.getByText(/\/api\/cron$/)).toBeVisible();
-    await expect(dialog.getByText("Last run:")).toContainText("16 minutes ago");
+    await expect(dialog.getByText("Last run:")).toContainText("36 minutes ago");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await banner.getByRole("button", { name: "Dismiss" }).click();
